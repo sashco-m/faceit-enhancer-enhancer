@@ -1,3 +1,4 @@
 /dist
+/load_me
 .env
 /node_modules

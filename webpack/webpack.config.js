@@ -5,13 +5,17 @@ const srcDir = path.join(__dirname, "..", "src");
 module.exports = {
    mode: "production",
    entry: {
-    //popup: path.join(srcDir, 'popup.tsx'),
-    //options: path.join(srcDir, 'options.tsx'),
-    background: path.join(srcDir, 'background.ts'),
-    content: path.join(srcDir, 'content.ts'),
+      //popup: path.join(srcDir, 'popup.tsx'),
+      //options: path.join(srcDir, 'options.tsx'),
+      background: [
+         path.join(srcDir, 'background.ts'),
+      ],
+      content: [
+         path.join(srcDir, 'content.ts'),
+      ],
    },
    output: {
-      path: path.join(__dirname, "../dist"),
+      path: path.join(__dirname, "../load_me"),
       filename: "[name].js",
    },
    resolve: {

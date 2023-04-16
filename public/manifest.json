@@ -16,8 +16,14 @@
       },
     "content_scripts": [
         {
-            "matches": ["https://www.faceit.com/*"],
+            "matches": ["https://www.faceit.com/en/csgo/room/*"],
             "js": ["content.js"]
+        },
+        {
+            "matches": ["https://www.faceit.com/en/csgo/room/*"],
+            "run_at":"document_start",
+            "world": "MAIN",
+            "js": ["embed.js"]
         }
     ],
     "background": {
