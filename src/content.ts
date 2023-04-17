@@ -27,12 +27,26 @@ const waitForRosterLoad = (event:any) => {
                 // we need to consider the extra div added from whether they are in a party or not
                 const userName = getUsernameFromPlayer(node);
                 (async () => {
-                    console.log(node)
                     const response = await chrome.runtime.sendMessage({type: "getUserStats", userName});
-                    console.log(response);
-                    let stats = document.createElement('div')
-                    stats.innerHTML = response.kdr
-                    node.appendChild(stats) 
+                    let table = document.createElement('table')
+
+                    let row1 = document.createElement('tr')
+                    let kdrLine = document.createElement('td')
+                    kdrLine.innerHTML=`kdr: ${(response.kdr/response.matchesCounted).toFixed(2)}`
+                    let kprLine = document.createElement('td')
+                    kprLine.innerHTML=`kpr: ${(response.kpr/response.matchesCounted).toFixed(2)}`
+
+                    let row2 = document.createElement('tr')
+                    let hspLine = document.createElement('td')
+                    hspLine.innerHTML=`hs: ${(response.hsp/response.matchesCounted).toFixed(2)}%`
+                    let wrLine = document.createElement('td')
+                    wrLine.innerHTML=`winrate: ${response.matchesCounted - response.lr}/${response.matchesCounted}`
+
+                    row1.append(kdrLine, kprLine)
+                    row2.append(hspLine, wrLine)
+                    table.append(row1, row2)
+
+                    node.appendChild(table) 
                 })();
 
             }
