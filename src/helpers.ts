@@ -1,9 +1,11 @@
-export const getPlayersFromRoster = (rosterSelector:string, shadowRoot:ShadowRoot) => {
+import { base_url, client_key } from "./constants"
+
+export const getPlayersFromRoster = (rosterSelector:string, shadowRoot:ShadowRoot):ChildNode[]|null  => {
 
     const parties = shadowRoot.querySelector(rosterSelector)?.firstChild?.childNodes
     if(!parties){
         console.log('unable to get parties')
-        return
+        return null
     }
     // assumption: dom tree is
     //  roster1 or 2
@@ -11,7 +13,6 @@ export const getPlayersFromRoster = (rosterSelector:string, shadowRoot:ShadowRoo
     //          parties
     //              players
     //                  rest of nodes
-    // may not be true if everyone is soloQ 
     let playerNodes:Array<ChildNode> = []
     for(let party of parties){
         for(let player of party.childNodes){
@@ -21,7 +22,7 @@ export const getPlayersFromRoster = (rosterSelector:string, shadowRoot:ShadowRoo
     return playerNodes
 }
 
-export const getUsernameFromPlayer = (playerNode: ChildNode) => {
+export const getUsernameFromPlayer = (playerNode: ChildNode):string|null|undefined => {
     // the children should correspond to the parties each user is a part of
     // to be safe just DFS it
     // ^^ we could take the risk and specifically select the username
@@ -51,16 +52,33 @@ export const getUsernameFromPlayer = (playerNode: ChildNode) => {
     return nodeIter.nextNode()?.textContent
 }
 
-export const getUserFromRoster = (userNode:ChildNode):string|null => {
-    // Deprecated. Replaced by getUsernameFromPlayer
-    //convoluted DOM tree
-    return userNode.firstChild?.firstChild?.firstChild?.firstChild?.childNodes[1].firstChild?.firstChild?.firstChild?.textContent || null;
-}
+export type userStatsResponse = {
+    player_stats:{
+        'K/D Ratio':string
+        'K/R Ratio':string
+        'Headshots %':string
+        'Result':string
+    }
+};
 
-export const getUserStatsFromMatchStats = (playerId:string, matchStats:any):any => {
+export const getUserStatsFromMatchStats = (playerId:string, matchStats:any):userStatsResponse|undefined=> {
     let players = [...matchStats.rounds[0].teams[0].players, ...matchStats.rounds[0].teams[1].players]
     //players.push(...matchStats.rounds[0].teams[1].players)
     return players.find((player:any)=>{
         return player.player_id == playerId
     })
 }
+
+export const fetchWrapper = async (path:string, searchParams:Map<string, string> = new Map<string,string>()):Promise<Response> => {
+
+    const url = new URL(path, base_url)
+    for(let [key,value] of searchParams){
+        url.searchParams.append(key, value)
+    }
+    return await fetch(url, {
+        headers:{
+            'Authorization':`Bearer ${client_key}`
+        }
+    })
+}
+

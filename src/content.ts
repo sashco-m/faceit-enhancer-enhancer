@@ -1,4 +1,4 @@
-import { getUsernameFromPlayer, getPlayersFromRoster, getUserFromRoster } from "./helpers";
+import { getUsernameFromPlayer, getPlayersFromRoster } from "./helpers";
 
 const waitForRosterLoad = (event:any) => {
     var timer = setInterval (pollDOMForRoster, 111);
