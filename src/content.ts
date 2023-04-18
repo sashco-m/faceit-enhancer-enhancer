@@ -28,6 +28,13 @@ const waitForRosterLoad = (event:any) => {
                 const userName = getUsernameFromPlayer(node);
                 (async () => {
                     const response = await chrome.runtime.sendMessage({type: "getUserStats", userName});
+                    if(!response){
+                        const errMsg = document.createElement('h5')
+                        errMsg.textContent = `Error fetching stats for: ${userName}`
+                        node.appendChild(errMsg)
+                        return
+                    }
+
                     let table = document.createElement('table')
 
                     let row1 = document.createElement('tr')
