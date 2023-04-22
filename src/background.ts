@@ -5,8 +5,16 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   // wait for async response
   return true
 });
+
+export type getUserStatsResponse = {
+  kdr: number,
+  kpr: number,
+  hsp: number,
+  lr: number,
+  matchesCounted: number,
+};
   
-const getUserStats = async (userName:string) => {
+const getUserStats = async (userName:string):Promise<getUserStatsResponse|undefined> => {
   // find playerId (I think we can get player_id from the match page. This may be unecessary)
   let playerRes = await fetchWrapper('/data/v4/players', new Map([
     ['nickname', userName],

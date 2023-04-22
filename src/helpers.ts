@@ -1,3 +1,4 @@
+import { getUserStatsResponse } from "./background"
 import { base_url, client_key } from "./constants"
 
 export const getPlayersFromRoster = (rosterSelector:string, shadowRoot:ShadowRoot):ChildNode[]|null  => {
@@ -42,7 +43,7 @@ export const getUsernameFromPlayer = (playerNode: ChildNode):string|null|undefin
 
     let nodeIter = document.createNodeIterator(playerNode, NodeFilter.SHOW_TEXT, {
         acceptNode(node){
-            if(node.parentNode?.nodeName!= 'DIV') // as of right now everything 
+            if(node.parentNode?.nodeName!= 'DIV') // Only usernames are under div's
                 return NodeFilter.FILTER_REJECT
             return NodeFilter.FILTER_ACCEPT
         },
@@ -52,7 +53,7 @@ export const getUsernameFromPlayer = (playerNode: ChildNode):string|null|undefin
     return nodeIter.nextNode()?.textContent
 }
 
-export type userStatsResponse = {
+export type userStatsFromMatchStatsResponse = {
     player_stats:{
         'K/D Ratio':string
         'K/R Ratio':string
@@ -61,7 +62,7 @@ export type userStatsResponse = {
     }
 };
 
-export const getUserStatsFromMatchStats = (playerId:string, matchStats:any):userStatsResponse|undefined=> {
+export const getUserStatsFromMatchStats = (playerId:string, matchStats:any):userStatsFromMatchStatsResponse|undefined=> {
     let players = [...matchStats.rounds[0].teams[0].players, ...matchStats.rounds[0].teams[1].players]
     //players.push(...matchStats.rounds[0].teams[1].players)
     return players.find((player:any)=>{
@@ -80,5 +81,40 @@ export const fetchWrapper = async (path:string, searchParams:Map<string, string>
             'Authorization':`Bearer ${client_key}`
         }
     })
+}
+
+export const buildStatsTable = (userStats: getUserStatsResponse):HTMLTableElement => {
+    let table = document.createElement('table')
+
+    let headers = document.createElement('tr')
+    let kdrHeader = document.createElement('th')
+    kdrHeader.innerHTML = "kdr"
+    let kprHeader = document.createElement('th')
+    kprHeader.innerHTML = "kpr"
+    let hspHeader = document.createElement('th')
+    hspHeader.innerHTML = "hsp"
+    let wrHeader = document.createElement('th')
+    wrHeader.innerHTML = "winrate"
+    headers.append(kdrHeader, kprHeader, hspHeader, wrHeader)
+    
+
+    let values = document.createElement('tr')
+    let hspLine = document.createElement('td')
+    hspLine.style.paddingRight = '8px'
+    hspLine.innerHTML=`${(userStats.hsp/userStats.matchesCounted).toFixed(2)}%`
+    let wrLine = document.createElement('td')
+    wrLine.style.paddingRight = '8px'
+    wrLine.innerHTML=`${userStats.matchesCounted - userStats.lr}/${userStats.matchesCounted}`
+    let kdrLine = document.createElement('td')
+    kdrLine.style.paddingRight = '8px'
+    kdrLine.innerHTML = (userStats.kdr/userStats.matchesCounted).toFixed(2)
+    let kprLine = document.createElement('td')
+    kprLine.style.paddingRight = '8px'
+    kprLine.innerHTML = (userStats.kpr/userStats.matchesCounted).toFixed(2)
+    values.append(kdrLine, kprLine, hspLine, wrLine)
+
+    table.append(headers, values)
+
+    return table
 }
 
