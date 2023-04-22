@@ -53,6 +53,33 @@ export const getUsernameFromPlayer = (playerNode: ChildNode):string|null|undefin
     return nodeIter.nextNode()?.textContent
 }
 
+export const getUserNodeFromPlayer = (playerNode: ChildNode) => {
+    let nodeIter = document.createNodeIterator(playerNode, NodeFilter.SHOW_TEXT, {
+        acceptNode(node){
+            if(node.parentNode?.nodeName!= 'DIV') // Only usernames are under div's
+                return NodeFilter.FILTER_REJECT
+            return NodeFilter.FILTER_ACCEPT
+        },
+    })
+   
+    // return the first one
+    return nodeIter.nextNode()
+}
+
+export const userNameToUserNode = (roster:any):Map<string,Node> => {
+    let nameToNode = new Map<string, Node>() 
+    for(let node of roster){
+        let userNode = getUserNodeFromPlayer(node)
+        let userName = userNode?.textContent
+        if(!userName || !userNode) continue
+        // insert it somewhere in the tree above the username (subject to change)
+        let player = userNode.parentNode?.parentNode?.parentNode?.parentNode?.parentNode
+        if(!player) continue
+        nameToNode.set(userName, player)
+    }
+    return nameToNode
+}
+
 export type userStatsFromMatchStatsResponse = {
     player_stats:{
         'K/D Ratio':string
@@ -94,17 +121,17 @@ export const buildStatsTable = (userStats: getUserStatsResponse):HTMLTableElemen
     let hspHeader = document.createElement('th')
     hspHeader.innerHTML = "hsp"
     let wrHeader = document.createElement('th')
-    wrHeader.innerHTML = "winrate"
+    wrHeader.innerHTML = "wr"
     headers.append(kdrHeader, kprHeader, hspHeader, wrHeader)
     
 
     let values = document.createElement('tr')
     let hspLine = document.createElement('td')
     hspLine.style.paddingRight = '8px'
-    hspLine.innerHTML=`${(userStats.hsp/userStats.matchesCounted).toFixed(2)}%`
+    hspLine.innerHTML=`${(userStats.hsp/userStats.matchesCounted).toFixed(0)}%`
     let wrLine = document.createElement('td')
     wrLine.style.paddingRight = '8px'
-    wrLine.innerHTML=`${userStats.matchesCounted - userStats.lr}/${userStats.matchesCounted}`
+    wrLine.innerHTML=`${userStats.wr}/${userStats.matchesCounted}`
     let kdrLine = document.createElement('td')
     kdrLine.style.paddingRight = '8px'
     kdrLine.innerHTML = (userStats.kdr/userStats.matchesCounted).toFixed(2)

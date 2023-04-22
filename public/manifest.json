@@ -1,8 +1,8 @@
 {
     "manifest_version": 3,
-    "name": "sashco-faceit-improved",
+    "name": "faceit-enhancer-enhancer",
     "version": "1.0",
-    "description": "Display user stats in the faceit match page, among other QOL improvements.",
+    "description": "Display user stats in the faceit match page!",
     "permissions": [
         "activeTab",
         "scripting"
