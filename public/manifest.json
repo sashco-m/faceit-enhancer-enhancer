@@ -3,10 +3,7 @@
     "name": "faceit-enhancer-enhancer",
     "version": "1.0",
     "description": "Display user stats in the faceit match page!",
-    "permissions": [
-        "activeTab",
-        "scripting"
-     ], 
+    "permissions": [], 
     "action":{},
     "icons": {
         "16": "images/faceit-extension-16.png",

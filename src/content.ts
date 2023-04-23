@@ -76,8 +76,6 @@ const useIdFromMatchApi = (roster:Array<ChildNode>) => {
     (async () => {
         const rosterData = await chrome.runtime.sendMessage({type: "getMatchUsers", match_id})
         let nameToNode = userNameToUserNode(roster)
-        console.log(rosterData)
-        console.log(nameToNode)
 
         for(let player of rosterData){
             // find the player by nickname
