@@ -1,5 +1,5 @@
 import { getUserStatsResponse } from "./background";
-import { getUsernameFromPlayer, getPlayersFromRoster, buildStatsTable, fetchWrapper, getUserNodeFromPlayer, userNameToUserNode } from "./helpers";
+import { getPlayersFromRoster, buildStatsTable, userNameToUserNode } from "./helpers";
 
 const waitForRosterLoad = () => {
     var timer = setInterval (pollDOMForRoster, 500);
@@ -35,34 +35,6 @@ const waitForRosterLoad = () => {
 }
 
 waitForRosterLoad()
-
-// implementation #1
-// we scrape the roster for userId's, and use those Id's to get player_id's
-// the playerId's are used to then get stats which are inserted back into the page
-const useIdFromMatchPage = (roster:Array<ChildNode>) => {
-    for(let node of roster){
-        // set a loading message
-        const loadMsg = document.createElement('h5')
-        loadMsg.textContent = 'loading...'
-        node.appendChild(loadMsg)
-        // we need to consider the extra div added from whether they are in a party or not
-        const userName = getUsernameFromPlayer(node);
-        (async () => {
-            const response = await chrome.runtime.sendMessage({type: "getUserStats", userName}) as getUserStatsResponse
-            // remove loadMsg
-            node.removeChild(loadMsg)
-            if(!response){
-                const errMsg = document.createElement('h5')
-                errMsg.textContent = `Error fetching stats for: ${userName}`
-                node.appendChild(errMsg)
-                return
-            }
-
-            node.appendChild(buildStatsTable(response)) 
-        })();
-
-    }
-}
 
 // implementation #2
 const useIdFromMatchApi = (roster:Array<ChildNode>) => {

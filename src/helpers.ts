@@ -106,7 +106,8 @@ export const fetchWrapper = async (path:string, searchParams:Map<string, string>
     return await fetch(url, {
         headers:{
             'Authorization':`Bearer ${client_key}`
-        }
+        },
+        cache: 'force-cache',
     })
 }
 

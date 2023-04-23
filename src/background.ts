@@ -1,8 +1,6 @@
 import { fetchWrapper, getUserStatsFromMatchStats } from "./helpers";
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  if(request.type === 'getUserStats')
-    getUserStats(request.userName).then(sendResponse)
   if(request.type === 'getUserStatsNew')
     getUserStatsFromPlayerId(request.player_id).then(sendResponse)
   if(request.type === 'getMatchUsers')
@@ -28,22 +26,6 @@ export type getUserStatsResponse = {
   wr: number,
   matchesCounted: number,
 };
-  
-const getUserStats = async (userName:string):Promise<getUserStatsResponse|undefined> => {
-  // find playerId (I think we can get player_id from the match page. This may be unecessary)
-  let playerRes = await fetchWrapper('/data/v4/players', new Map([
-    ['nickname', userName],
-    ['game', 'csgo']
-  ]))
-  if(playerRes.status != 200){
-    console.log('error finding stats for player')
-    return
-  }
-  let playerData = await playerRes.json()
-  let playerId = playerData.player_id
-  
-  return await getUserStatsFromPlayerId(playerId)
-}
 
 const getUserStatsFromPlayerId = async (player_id:string):Promise<getUserStatsResponse|undefined>=> {
   // return last n matches

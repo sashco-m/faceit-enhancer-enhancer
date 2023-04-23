@@ -9,15 +9,15 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/sashco-m/faceit-qol-extension.git"
+    "url": "git+https://github.com/sashco-m/faceit-enhancer-enhancer.git"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/sashco-m/faceit-qol-extension/issues"
+    "url": "https://github.com/sashco-m/faceit-enhancer-enhancer/issues"
   },
-  "homepage": "https://github.com/sashco-m/faceit-qol-extension#readme",
+  "homepage": "https://github.com/sashco-m/faceit-enhancer-enhancer#readme",
   "devDependencies": {
     "@types/chrome": "^0.0.224",
     "copy-webpack-plugin": "^11.0.0",
