@@ -2,7 +2,9 @@ import { getUserStatsResponse } from "./background";
 import { getPlayersFromRoster, buildStatsTable, userNameToUserNode } from "./helpers";
 
 const waitForRosterLoad = () => {
-    var timer = setInterval (pollDOMForRoster, 500);
+    let timer = setInterval (pollDOMForRoster, 500)
+    let timedOut = false
+    let timeout = setTimeout(() => timedOut = true, 15000)
 
     function pollDOMForRoster () {
         console.log('searching...')
@@ -15,7 +17,7 @@ const waitForRosterLoad = () => {
             if(!shadowRoot){
                 console.log('error selecting shadow dom')
                 // set the poll 
-                timer = setInterval (pollDOMForRoster, 500);
+                pollIfNotTimedOut() 
                 return
             }
             // 'roster1' and 'roster2' are convenient names
@@ -23,14 +25,23 @@ const waitForRosterLoad = () => {
             let roster2 = getPlayersFromRoster("[name='roster2']", shadowRoot)
             if(!roster1 || !roster2){
                 // set the poll 
-                timer = setInterval (pollDOMForRoster, 500);
+                pollIfNotTimedOut() 
                 console.log('error getting roster')
                 return
             }
 
-            //useIdFromMatchPage([...roster1, ...roster2])
+            // might as well clear the timeout
+            clearTimeout(timeout)
             useIdFromMatchApi([...roster1, ...roster2]) 
         }
+    }
+
+    const pollIfNotTimedOut = () => {
+        if(timedOut){
+            console.log('timed out') 
+            return
+        }
+        timer = setTimeout(pollDOMForRoster, 500)
     }
 }
 
