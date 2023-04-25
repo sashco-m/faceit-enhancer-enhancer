@@ -23,36 +23,6 @@ export const getPlayersFromRoster = (rosterSelector:string, shadowRoot:ShadowRoo
     return playerNodes
 }
 
-export const getUsernameFromPlayer = (playerNode: ChildNode):string|null|undefined => {
-    // the children should correspond to the parties each user is a part of
-    // to be safe just DFS it
-    // ^^ we could take the risk and specifically select the username
-    //  But requires we know exactly which text is the username
-    //  so this solution is likely to break
-    /*
-    return playerNode
-        ?.firstChild
-        ?.firstChild
-        ?.firstChild
-        ?.firstChild
-        ?.childNodes[1]
-        ?.firstChild
-        ?.childNodes[1]
-        .textContent
-    */
-
-    let nodeIter = document.createNodeIterator(playerNode, NodeFilter.SHOW_TEXT, {
-        acceptNode(node){
-            if(node.parentNode?.nodeName!= 'DIV') // Only usernames are under div's
-                return NodeFilter.FILTER_REJECT
-            return NodeFilter.FILTER_ACCEPT
-        },
-    })
-   
-    // return the first one. For now this is the username
-    return nodeIter.nextNode()?.textContent
-}
-
 export const getUserNodeFromPlayer = (playerNode: ChildNode) => {
     let nodeIter = document.createNodeIterator(playerNode, NodeFilter.SHOW_TEXT, {
         acceptNode(node){
