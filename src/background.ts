@@ -1,10 +1,46 @@
 import { fetchWrapper, getUserStatsFromMatchStats } from "./helpers";
 
+
+/* Listens to onHistoryStateUpdated events, since we can reach the match page
+ * via history.pushState().
+ * This is how we tell the content script to get busy. 
+ * 
+*/
+chrome.webNavigation.onHistoryStateUpdated.addListener(
+    async (details:chrome.webNavigation.WebNavigationTransitionCallbackDetails) => {
+
+        console.log(`history updated: ${details.url}`)
+
+        // matches URLs with /en/csgo/room/{uuid}
+        if(!details.url.match('\/en\/csgo\/room\/[0-9a-zA-z\-]*$')) return
+
+        chrome.tabs.query({active: true, currentWindow: true}, tabs => {
+          
+          const tabId = tabs[0]?.id
+          if(!tabId){
+            console.log('problem getting current tab')
+            return
+          }
+
+          chrome.tabs.sendMessage(tabId, {})
+        });
+    }
+) 
+
+/* Listens to requests from the content scripts.
+ * The background script does the heavy lifting.
+ *
+ * 
+*/
+
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+
   if(request.type === 'getUserStatsNew')
     getUserStatsFromPlayerId(request.player_id).then(sendResponse)
+
   if(request.type === 'getMatchUsers')
     getMatchUsers(request.match_id).then(sendResponse)
+
   // wait for async response
   return true
 });

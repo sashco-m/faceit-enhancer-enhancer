@@ -8,3 +8,5 @@ export const base_url = new URL('https://open.faceit.com')
 // export const old_base_url = new URL('https://api.faceit.com')
 // export const user_token = localStorage.getItem('token')
 // this can be called once the page loads
+
+export const extension_name = 'faceit-enhancer-enhancer'

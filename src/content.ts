@@ -1,41 +1,52 @@
 import { getUserStatsResponse } from "./background";
-import { getPlayersFromRoster, buildStatsTable, userNameToUserNode } from "./helpers";
+import { getPlayersFromRoster, buildStatsTable, userNameToUserNode, buildLoadingMessage, hasBeenModified } from "./helpers";
+
+/* Listens to the background script for when to start looking for
+ * the roster.
+ * There is a problem where multiple history state changes are being pushed per navigate,
+ * so our listener must be idempotent.
+ * For now, we just check if we've inserted anything before trying to insert the loading icon.
+ * I'd like a better solution but this works, plus any extra API calls would be cached.
+*/
+chrome.runtime.onMessage.addListener(
+    async (request, sender, sendResponse) => {
+        waitForRosterLoad()
+    }
+)
 
 const waitForRosterLoad = () => {
-    let timer = setInterval (pollDOMForRoster, 500)
-    let timedOut = false
-    let timeout = setTimeout(() => timedOut = true, 15000)
-
+    
     function pollDOMForRoster () {
         console.log('searching...')
 
-        if (document.getElementById('parasite-container')?.shadowRoot) {
-            // stop polling page
-            clearInterval (timer);
-            // first find the shadowroot
-            const shadowRoot = document.getElementById('parasite-container')?.shadowRoot || null;
-            if(!shadowRoot){
-                console.log('error selecting shadow dom')
-                // set the poll 
-                pollIfNotTimedOut() 
-                return
-            }
-            // 'roster1' and 'roster2' are convenient names
-            let roster1 = getPlayersFromRoster("[name='roster1']", shadowRoot)
-            let roster2 = getPlayersFromRoster("[name='roster2']", shadowRoot)
-            if(!roster1 || !roster2){
-                // set the poll 
-                pollIfNotTimedOut() 
-                console.log('error getting roster')
-                return
-            }
-
-            // might as well clear the timeout
-            clearTimeout(timeout)
-            useIdFromMatchApi([...roster1, ...roster2]) 
+        // stop polling page
+        clearInterval (timer);
+        // first find the shadowroot
+        const shadowRoot = document.getElementById('parasite-container')?.shadowRoot || null;
+        if(!shadowRoot){
+            console.log('error selecting shadow dom')
+            // set the poll 
+            pollIfNotTimedOut() 
+            return
         }
+        // 'roster1' and 'roster2' are convenient names
+        let roster1 = getPlayersFromRoster("[name='roster1']", shadowRoot)
+        let roster2 = getPlayersFromRoster("[name='roster2']", shadowRoot)
+        if(!roster1 || !roster2){
+            // set the poll 
+            pollIfNotTimedOut() 
+            console.log('error getting roster')
+            return
+        }
+        // might as well clear the timeout
+        clearTimeout(timeout)
+        useIdFromMatchApi([...roster1, ...roster2]) 
     }
 
+    // timers for roster load
+    let timer = setInterval (pollDOMForRoster, 500)
+    let timedOut = false
+    const timeout = setTimeout(() => timedOut = true, 15000)
     const pollIfNotTimedOut = () => {
         if(timedOut){
             console.log('timed out') 
@@ -45,10 +56,8 @@ const waitForRosterLoad = () => {
     }
 }
 
-waitForRosterLoad()
-
 // implementation #2
-const useIdFromMatchApi = (roster:Array<ChildNode>) => {
+const useIdFromMatchApi = (roster:ChildNode[]) => {
     // the idea is to use the match ID from the URL to get all 
     // player_id's in the lobby
     // then we loop over each player, and determine where to insert this data
@@ -64,9 +73,12 @@ const useIdFromMatchApi = (roster:Array<ChildNode>) => {
             // find the player by nickname
             let playerNode = nameToNode.get(player.nickname)
             if(!playerNode) continue
+
+            // make sure it hasn't already been set
+            if(playerNode.parentNode && hasBeenModified(playerNode.parentNode)) return
+
             // set a loading message
-            const loadMsg = document.createElement('h5')
-            loadMsg.textContent = 'loading...'
+            const loadMsg = buildLoadingMessage()
             playerNode.appendChild(loadMsg);
 
             (async () => {

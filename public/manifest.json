@@ -3,7 +3,9 @@
     "name": "faceit-enhancer-enhancer",
     "version": "1.0",
     "description": "Display user stats in the faceit match page!",
-    "permissions": [], 
+    "permissions": [
+        "webNavigation"
+    ], 
     "action":{},
     "icons": {
         "16": "images/faceit-extension-16.png",
@@ -13,7 +15,7 @@
       },
     "content_scripts": [
         {
-            "matches": ["https://www.faceit.com/en/csgo/room/*"],
+            "matches": ["https://www.faceit.com/*"],
             "js": ["content.js"]
         }
     ],

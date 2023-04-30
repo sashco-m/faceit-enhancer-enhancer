@@ -1,5 +1,5 @@
 import { getUserStatsResponse } from "./background"
-import { base_url, client_key } from "./constants"
+import { base_url, client_key, extension_name } from "./constants"
 
 export const getPlayersFromRoster = (rosterSelector:string, shadowRoot:ShadowRoot):ChildNode[]|null  => {
 
@@ -81,8 +81,20 @@ export const fetchWrapper = async (path:string, searchParams:Map<string, string>
     })
 }
 
+export const hasBeenModified = (node:ParentNode):boolean => {
+    return node.querySelector(`.${extension_name}`) != null
+}
+
+export const buildLoadingMessage = ():HTMLHeadingElement => {
+    const loadMsg = document.createElement('h5')
+    loadMsg.textContent = 'loading...'
+    loadMsg.classList.add(extension_name)
+    return loadMsg
+}
+
 export const buildStatsTable = (userStats: getUserStatsResponse):HTMLTableElement => {
     let table = document.createElement('table')
+    table.classList.add(extension_name)
 
     let headers = document.createElement('tr')
     let kdrHeader = document.createElement('th')
