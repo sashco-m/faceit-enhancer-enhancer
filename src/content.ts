@@ -1,5 +1,6 @@
 import { getUserStatsResponse } from "./background";
-import { getPlayersFromRoster, buildStatsTable, userNameToUserNode, buildLoadingMessage, hasBeenModified } from "./helpers";
+import { extension_name } from "./constants";
+import { getPlayersFromRoster, buildStatsTable, userNameToUserNode, buildLoadingMessage, hasBeenModified, buildErrorMessage } from "./helpers";
 
 /* Listens to the background script for when to start looking for
  * the roster.
@@ -10,7 +11,10 @@ import { getPlayersFromRoster, buildStatsTable, userNameToUserNode, buildLoading
 */
 chrome.runtime.onMessage.addListener(
     async (request, sender, sendResponse) => {
-        waitForRosterLoad()
+        if(request.type === 'waitForRosterLoad')
+            waitForRosterLoad()
+        if(request.type === 'clearPage')
+            clearPage()
     }
 )
 
@@ -56,13 +60,17 @@ const waitForRosterLoad = () => {
     }
 }
 
-// implementation #2
+const clearPage = () => {
+    const shadowRoot = document.getElementById('parasite-container')?.shadowRoot
+    if(!shadowRoot){
+        console.log('error selecting shadow dom')
+        return
+    }
+    shadowRoot.querySelectorAll(`.${extension_name}`).forEach(el => el.remove())
+}
+
 const useIdFromMatchApi = (roster:ChildNode[]) => {
-    // the idea is to use the match ID from the URL to get all 
-    // player_id's in the lobby
-    // then we loop over each player, and determine where to insert this data
-    // using the nameToNode map
-    // this cuts down on the number of calls (10 -> 1)
+    // Use the match ID from the URL to get all player_id's in the lobby
     const match_id = window.location.pathname.split('/').slice(-1);
 
     (async () => {
@@ -86,8 +94,7 @@ const useIdFromMatchApi = (roster:ChildNode[]) => {
                 // remove loadMsg
                 playerNode.removeChild(loadMsg)
                 if(!response){
-                    const errMsg = document.createElement('h5')
-                    errMsg.textContent = `Error fetching stats for: ${player.nickname}`
+                    const errMsg = buildErrorMessage(`Error fetching stats for: ${player.nickname}`)
                     playerNode.appendChild(errMsg)
                     return
                 }

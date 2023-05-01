@@ -92,6 +92,13 @@ export const buildLoadingMessage = ():HTMLHeadingElement => {
     return loadMsg
 }
 
+export const buildErrorMessage = (msg:string) => {
+    const errMsg = document.createElement('h5')
+    errMsg.textContent = msg 
+    errMsg.classList.add(extension_name)
+    return errMsg
+}
+
 export const buildStatsTable = (userStats: getUserStatsResponse):HTMLTableElement => {
     let table = document.createElement('table')
     table.classList.add(extension_name)
@@ -128,3 +135,27 @@ export const buildStatsTable = (userStats: getUserStatsResponse):HTMLTableElemen
     return table
 }
 
+export const debounce = (f:Function, timeout = 500) => {
+    let timer:NodeJS.Timeout
+    return (...args) => {
+      clearTimeout(timer);
+      timer = setTimeout(() => { f.apply(this, args); }, timeout);
+    }
+}
+
+/* Takes a function, and applies arguments as args + settings
+ * Probably could be made nicer with a higher-order function. 
+ * Can't figure out how to not make it ugly though with .then/.catch
+*/
+export const withSettings = async (f:Function, args:any[], settings:string[]) => {
+    return chrome.storage.local.get(settings)
+    .then((result) => {
+        let values:any[] = []
+        for(let setting of settings){
+            values.push(result[setting])
+        }
+        return f.apply(this,[...args, ...values])
+    }).catch((err)=>{
+        console.log('(withSettings) error getting storage: '+err)
+    })
+}

@@ -10,3 +10,12 @@ export const base_url = new URL('https://open.faceit.com')
 // this can be called once the page loads
 
 export const extension_name = 'faceit-enhancer-enhancer'
+
+type items = {
+    [key:string]:any
+}
+
+// add any default user settings
+export const default_settings:items = {
+    'numMatches':5,
+}
