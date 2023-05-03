@@ -135,27 +135,27 @@ export const buildStatsTable = (userStats: getUserStatsResponse):HTMLTableElemen
     return table
 }
 
-export const debounce = (f:Function, timeout = 500) => {
+export const debounce = (f:(...args: any[]) => any, timeout = 500) => {
     let timer:NodeJS.Timeout
-    return (...args) => {
+    return (...args:any[]) => {
       clearTimeout(timer);
       timer = setTimeout(() => { f.apply(this, args); }, timeout);
     }
 }
 
-/* Takes a function, and applies arguments as args + settings
- * Probably could be made nicer with a higher-order function. 
- * Can't figure out how to not make it ugly though with .then/.catch
+/* Higher-order function which applies the supplied settings as arguments
+ * LAST in order of being specified
+ * Chain the resulting function with the args you wish to supply
+ * Ex. withSettings(foo, 'bar').then()
 */
-export const withSettings = async (f:Function, args:any[], settings:string[]) => {
+export const withSettings = async (f:(...args: any[]) => any, ...settings:string[]) => {
     return chrome.storage.local.get(settings)
-    .then((result) => {
-        let values:any[] = []
-        for(let setting of settings){
-            values.push(result[setting])
-        }
-        return f.apply(this,[...args, ...values])
-    }).catch((err)=>{
-        console.log('(withSettings) error getting storage: '+err)
+    .then(settingsMap => {
+        return (...args:any[]) => f.apply(this, [
+            ...args,
+            ...settings.map(setting => settingsMap[setting])
+        ])
     })
+    // Lesson from the pragmatic programmer
+    //  Let it error -> what does catching this do for me?
 }

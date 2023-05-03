@@ -33,14 +33,15 @@ chrome.webNavigation.onHistoryStateUpdated.addListener(
  * 
 */
 
-chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+chrome.runtime.onMessage.addListener(async (request, sender, sendResponse) => {
 
   if(request.type === 'getUserStatsNew')
-    withSettings(getUserStatsFromPlayerId, [request.player_id], ["numMatches"]).then(sendResponse)
+    withSettings(getUserStatsFromPlayerId, "numMatches")
+      .then(f => f(request.player_id))
+      .then(sendResponse)
 
   if(request.type === 'getMatchUsers')
     getMatchUsers(request.match_id).then(sendResponse)
-  
   
   // wait for async response
   return true
