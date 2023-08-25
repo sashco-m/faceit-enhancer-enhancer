@@ -1,9 +1,10 @@
 import { getUserStatsResponse } from "./background"
 import { base_url, client_key, extension_name } from "./constants"
 
-export const getPlayersFromRoster = (rosterSelector:string, shadowRoot:ShadowRoot):ChildNode[]|null  => {
+export const getPlayersFromRoster = (rosterSelector:string):ChildNode[]|null  => {
 
-    const parties = shadowRoot.querySelector(rosterSelector)?.firstChild?.childNodes
+    const parties = document.querySelector(rosterSelector)?.firstChild?.childNodes
+
     if(!parties){
         console.log('unable to get parties')
         return null

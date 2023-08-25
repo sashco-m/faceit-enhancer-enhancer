@@ -33,7 +33,7 @@ chrome.webNavigation.onHistoryStateUpdated.addListener(
  * 
 */
 
-chrome.runtime.onMessage.addListener(async (request, sender, sendResponse) => {
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
   if(request.type === 'getUserStatsNew')
     withSettings(getUserStatsFromPlayerId, "numMatches")

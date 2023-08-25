@@ -25,17 +25,9 @@ const waitForRosterLoad = () => {
 
         // stop polling page
         clearInterval (timer);
-        // first find the shadowroot
-        const shadowRoot = document.getElementById('parasite-container')?.shadowRoot || null;
-        if(!shadowRoot){
-            console.log('error selecting shadow dom')
-            // set the poll 
-            pollIfNotTimedOut() 
-            return
-        }
         // 'roster1' and 'roster2' are convenient names
-        let roster1 = getPlayersFromRoster("[name='roster1']", shadowRoot)
-        let roster2 = getPlayersFromRoster("[name='roster2']", shadowRoot)
+        let roster1 = getPlayersFromRoster("[name='roster1']")
+        let roster2 = getPlayersFromRoster("[name='roster2']")
         if(!roster1 || !roster2){
             // set the poll 
             pollIfNotTimedOut() 
