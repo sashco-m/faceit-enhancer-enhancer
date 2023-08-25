@@ -53,12 +53,7 @@ const waitForRosterLoad = () => {
 }
 
 const clearPage = () => {
-    const shadowRoot = document.getElementById('parasite-container')?.shadowRoot
-    if(!shadowRoot){
-        console.log('error selecting shadow dom')
-        return
-    }
-    shadowRoot.querySelectorAll(`.${extension_name}`).forEach(el => el.remove())
+    document.querySelectorAll(`.${extension_name}`).forEach(el => el.remove())
 }
 
 const useIdFromMatchApi = (roster:ChildNode[]) => {

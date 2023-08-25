@@ -118,4 +118,6 @@ const getUserStatsFromPlayerId = async (player_id:string, numMatches:any):Promis
  *
  * 
 */
-chrome.storage.local.set(default_settings)
+chrome.runtime.onInstalled.addListener(function() {
+  chrome.storage.local.set(default_settings)
+});
