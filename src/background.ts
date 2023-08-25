@@ -1,4 +1,5 @@
-import { fetchWrapper, getUserStatsFromMatchStats } from "./helpers";
+import { default_settings } from "./constants";
+import { fetchWrapper, getUserStatsFromMatchStats, withSettings } from "./helpers";
 
 
 /* Listens to onHistoryStateUpdated events, since we can reach the match page
@@ -9,21 +10,20 @@ import { fetchWrapper, getUserStatsFromMatchStats } from "./helpers";
 chrome.webNavigation.onHistoryStateUpdated.addListener(
     async (details:chrome.webNavigation.WebNavigationTransitionCallbackDetails) => {
 
-        console.log(`history updated: ${details.url}`)
+      console.log(`history updated: ${details.url}`)
 
-        // matches URLs with /en/csgo/room/{uuid}
-        if(!details.url.match('\/en\/csgo\/room\/[0-9a-zA-z\-]*$')) return
+      // matches URLs with /en/csgo/room/{uuid}
+      if(!details.url.match('\/en\/csgo\/room\/[0-9a-zA-z\-]*$')) return
 
-        chrome.tabs.query({active: true, currentWindow: true}, tabs => {
-          
-          const tabId = tabs[0]?.id
-          if(!tabId){
-            console.log('problem getting current tab')
-            return
-          }
+      // Send to all tabs, since multiple could have opened the match page
+      chrome.tabs.query({}, tabs => {
+        for(let tab of tabs){
+          if(!tab.id)
+            continue
 
-          chrome.tabs.sendMessage(tabId, {})
-        });
+          chrome.tabs.sendMessage(tab.id, {type:'waitForRosterLoad'})
+        }
+      })
     }
 ) 
 
@@ -36,11 +36,13 @@ chrome.webNavigation.onHistoryStateUpdated.addListener(
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
   if(request.type === 'getUserStatsNew')
-    getUserStatsFromPlayerId(request.player_id).then(sendResponse)
+    withSettings(getUserStatsFromPlayerId, "numMatches")
+      .then(f => f(request.player_id))
+      .then(sendResponse)
 
   if(request.type === 'getMatchUsers')
     getMatchUsers(request.match_id).then(sendResponse)
-
+  
   // wait for async response
   return true
 });
@@ -63,12 +65,12 @@ export type getUserStatsResponse = {
   matchesCounted: number,
 };
 
-const getUserStatsFromPlayerId = async (player_id:string):Promise<getUserStatsResponse|undefined>=> {
+const getUserStatsFromPlayerId = async (player_id:string, numMatches:any):Promise<getUserStatsResponse|undefined>=> {
   // return last n matches
   let matchRes = await fetchWrapper(`/data/v4/players/${player_id}/history`, new Map([
     ['game', 'csgo'],
     ['offset','0'],
-    ['limit', '5']
+    ['limit', numMatches]
   ]))
   if(matchRes.status != 200){
     console.log('error getting player matches')
@@ -110,3 +112,12 @@ const getUserStatsFromPlayerId = async (player_id:string):Promise<getUserStatsRe
     matchesCounted
   }
 }
+
+/* Storage for local settings.
+ * Set once on background initialization
+ *
+ * 
+*/
+chrome.runtime.onInstalled.addListener(function() {
+  chrome.storage.local.set(default_settings)
+});

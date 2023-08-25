@@ -4,9 +4,12 @@
     "version": "1.1",
     "description": "Display user stats in the faceit match page!",
     "permissions": [
-        "webNavigation"
+        "webNavigation",
+        "storage"
     ], 
-    "action":{},
+    "action":{
+        "default_popup": "index.html"
+    },
     "icons": {
         "16": "images/faceit-extension-16.png",
         "32": "images/faceit-extension-32.png",

@@ -1,9 +1,10 @@
 import { getUserStatsResponse } from "./background"
 import { base_url, client_key, extension_name } from "./constants"
 
-export const getPlayersFromRoster = (rosterSelector:string, shadowRoot:ShadowRoot):ChildNode[]|null  => {
+export const getPlayersFromRoster = (rosterSelector:string):ChildNode[]|null  => {
 
-    const parties = shadowRoot.querySelector(rosterSelector)?.firstChild?.childNodes
+    const parties = document.querySelector(rosterSelector)?.firstChild?.childNodes
+
     if(!parties){
         console.log('unable to get parties')
         return null
@@ -92,6 +93,13 @@ export const buildLoadingMessage = ():HTMLHeadingElement => {
     return loadMsg
 }
 
+export const buildErrorMessage = (msg:string) => {
+    const errMsg = document.createElement('h5')
+    errMsg.textContent = msg 
+    errMsg.classList.add(extension_name)
+    return errMsg
+}
+
 export const buildStatsTable = (userStats: getUserStatsResponse):HTMLTableElement => {
     let table = document.createElement('table')
     table.classList.add(extension_name)
@@ -128,3 +136,27 @@ export const buildStatsTable = (userStats: getUserStatsResponse):HTMLTableElemen
     return table
 }
 
+export const debounce = (f:(...args: any[]) => any, timeout = 500) => {
+    let timer:NodeJS.Timeout
+    return (...args:any[]) => {
+      clearTimeout(timer);
+      timer = setTimeout(() => { f.apply(this, args); }, timeout);
+    }
+}
+
+/* Higher-order function which applies the supplied settings as arguments
+ * LAST in order of being specified
+ * Chain the resulting function with the args you wish to supply
+ * Ex. withSettings(foo, 'bar').then()
+*/
+export const withSettings = async (f:(...args: any[]) => any, ...settings:string[]) => {
+    return chrome.storage.local.get(settings)
+    .then(settingsMap => {
+        return (...args:any[]) => f.apply(this, [
+            ...args,
+            ...settings.map(setting => settingsMap[setting])
+        ])
+    })
+    // Lesson from the pragmatic programmer
+    //  Let it error -> what does catching this do for me?
+}
