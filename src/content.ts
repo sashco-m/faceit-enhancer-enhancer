@@ -1,4 +1,3 @@
-import { getUserStatsResponse } from "./background";
 import { extension_name } from "./constants";
 import { getPlayersFromRoster, buildStatsTable, userNameToUserNode, buildLoadingMessage, hasBeenModified, buildErrorMessage } from "./helpers";
 
@@ -77,7 +76,7 @@ const useIdFromMatchApi = (roster:ChildNode[]) => {
             playerNode.appendChild(loadMsg);
 
             (async () => {
-                const response = await chrome.runtime.sendMessage({type: "getUserStatsNew", player_id: player.player_id}) as getUserStatsResponse
+                const response = await chrome.runtime.sendMessage({type: "getUserStatsNew", player_id: player.player_id})
                 // remove loadMsg
                 playerNode.removeChild(loadMsg)
                 if(!response){

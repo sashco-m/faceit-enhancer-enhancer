@@ -1,4 +1,3 @@
-import { getUserStatsResponse } from "./background"
 import { base_url, client_key, extension_name } from "./constants"
 
 export const getPlayersFromRoster = (rosterSelector:string):ChildNode[]|null  => {
@@ -38,14 +37,22 @@ export const getUserNodeFromPlayer = (playerNode: ChildNode) => {
 }
 
 export const userNameToUserNode = (roster:any):Map<string,Node> => {
-    let nameToNode = new Map<string, Node>() 
+    let nameToNode = new Map<string, HTMLElement>() 
+    // want
+    // parent -> parent -> parent
+    // set flex-direction to column
+    // append stats
     for(let node of roster){
         let userNode = getUserNodeFromPlayer(node)
         let userName = userNode?.textContent
         if(!userName || !userNode) continue
-        // insert it somewhere in the tree above the username (subject to change)
-        let player = userNode.parentNode?.parentNode?.parentNode?.parentNode?.parentNode
+        // in-line with name
+        let nameLine = userNode.parentNode?.parentNode?.parentNode?.parentNode?.parentNode
+        // inside card, beneath name line
+        let player = nameLine?.parentNode?.parentNode?.parentElement
         if(!player) continue
+        // set player to have flex-direction column
+        player.style.flexDirection = 'column'
         nameToNode.set(userName, player)
     }
     return nameToNode
@@ -100,38 +107,26 @@ export const buildErrorMessage = (msg:string) => {
     return errMsg
 }
 
-export const buildStatsTable = (userStats: getUserStatsResponse):HTMLTableElement => {
-    let table = document.createElement('table')
+export const buildStatsTable = (userStats: any):HTMLDivElement=> {
+    let table = document.createElement('div')
+    table.style.display = 'flex'
+    table.style.flexWrap = 'wrap'
+    table.style.borderTop = '1px solid #303030'
+    table.style.justifyContent = 'space-between'
     table.classList.add(extension_name)
 
-    let headers = document.createElement('tr')
-    let kdrHeader = document.createElement('th')
-    kdrHeader.innerHTML = "kdr"
-    let kprHeader = document.createElement('th')
-    kprHeader.innerHTML = "kpr"
-    let hspHeader = document.createElement('th')
-    hspHeader.innerHTML = "hsp"
-    let wrHeader = document.createElement('th')
-    wrHeader.innerHTML = "wr"
-    headers.append(kdrHeader, kprHeader, hspHeader, wrHeader)
-    
-
-    let values = document.createElement('tr')
-    let hspLine = document.createElement('td')
-    hspLine.style.paddingRight = '8px'
-    hspLine.innerHTML=`${(userStats.hsp/userStats.matchesCounted).toFixed(0)}%`
-    let wrLine = document.createElement('td')
-    wrLine.style.paddingRight = '8px'
-    wrLine.innerHTML=`${userStats.wr}/${userStats.matchesCounted}`
-    let kdrLine = document.createElement('td')
-    kdrLine.style.paddingRight = '8px'
-    kdrLine.innerHTML = (userStats.kdr/userStats.matchesCounted).toFixed(2)
-    let kprLine = document.createElement('td')
-    kprLine.style.paddingRight = '8px'
-    kprLine.innerHTML = (userStats.kpr/userStats.matchesCounted).toFixed(2)
-    values.append(kdrLine, kprLine, hspLine, wrLine)
-
-    table.append(headers, values)
+    for(let stat in userStats){
+        let slot = document.createElement('div')
+        slot.style.display = 'flex'
+        slot.style.flexDirection = 'column'
+        slot.style.padding = '0.5em'
+        let title = document.createElement('div')
+        let value = document.createElement('div')
+        title.innerHTML = `<b>${stat}</b>`
+        value.innerHTML = userStats[stat]
+        slot.append(title, value)
+        table.append(slot)
+    }
 
     return table
 }

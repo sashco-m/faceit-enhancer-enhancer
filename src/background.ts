@@ -1,4 +1,4 @@
-import { default_settings } from "./constants";
+import { default_settings, SHOW_BEST_MAP, SHOW_HSP, SHOW_KDR, SHOW_KPR, SHOW_MATCHES, SHOW_WR } from "./constants";
 import { fetchWrapper, getUserStatsFromMatchStats, withSettings } from "./helpers";
 
 
@@ -36,7 +36,7 @@ chrome.webNavigation.onHistoryStateUpdated.addListener(
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
   if(request.type === 'getUserStatsNew')
-    withSettings(getUserStatsFromPlayerId, "numMatches")
+    withSettings(getUserStatsFromPlayerId, "numMatches", "display")
       .then(f => f(request.player_id))
       .then(sendResponse)
 
@@ -57,15 +57,7 @@ const getMatchUsers = async (match_id:string) => {
   return [...matchData.teams.faction1.roster, ...matchData.teams.faction2.roster]
 }
 
-export type getUserStatsResponse = {
-  kdr: number,
-  kpr: number,
-  hsp: number,
-  wr: number,
-  matchesCounted: number,
-};
-
-const getUserStatsFromPlayerId = async (player_id:string, numMatches:any):Promise<getUserStatsResponse|undefined>=> {
+const getUserStatsFromPlayerId = async (player_id:string, numMatches:any, display:Array<boolean>):Promise<any>=> {
   // return last n matches
   let matchRes = await fetchWrapper(`/data/v4/players/${player_id}/history`, new Map([
     ['game', 'csgo'],
@@ -83,6 +75,8 @@ const getUserStatsFromPlayerId = async (player_id:string, numMatches:any):Promis
   let hsp = 0
   let wr = 0
   let matchesCounted = 0
+  let matchesTotal = 0
+  let bestMap = ''
   // for each match, find the stats of the matchId add the stats to our avg
   for(let match of matchData.items){
     let statsRes = await fetchWrapper(`/data/v4/matches/${match.match_id}/stats`)
@@ -103,14 +97,38 @@ const getUserStatsFromPlayerId = async (player_id:string, numMatches:any):Promis
     wr += parseFloat(userStats.player_stats.Result)
     matchesCounted++
   }
-
-  return {
-    kdr,
-    kpr,
-    hsp,
-    wr,
-    matchesCounted
+  // find total matches and best map
+  let lifetimeRes = await fetchWrapper(`data/v4/players/${player_id}/stats/csgo`)
+  if(lifetimeRes.status != 200){
+    console.log('error getting lifetime stats')
+    return
   }
+  let lifetimeData = await lifetimeRes.json()
+  matchesTotal = lifetimeData.lifetime.Matches
+  let highestWR = 0
+  for(let map of lifetimeData.segments){
+    if(map.stats['Win Rate %'] > highestWR && map.stats.Matches >= 20){
+      highestWR = map.stats['Win Rate %']
+      bestMap = map.label
+    }
+  }
+
+  // display filters what we actually return 
+  let res = {}
+  if(display[SHOW_MATCHES]) 
+    res['matches'] = matchesTotal
+  if(display[SHOW_KDR])
+    res['kdr'] = (kdr/matchesCounted).toFixed(2)
+  if(display[SHOW_KPR])
+    res['kpr'] = (kpr/matchesCounted).toFixed(2)
+  if(display[SHOW_HSP])
+    res['hsp'] = `${(hsp/matchesCounted).toFixed(0)}%`
+  if(display[SHOW_BEST_MAP])
+    res['best map'] = bestMap
+  if(display[SHOW_WR])
+    res['wr'] = `${wr}/${matchesCounted}`
+
+  return res
 }
 
 /* Storage for local settings.

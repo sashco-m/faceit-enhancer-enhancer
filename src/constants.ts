@@ -15,7 +15,16 @@ type items = {
     [key:string]:any
 }
 
+// add more in future
+// index in display array (js isn't happy with bit strings)
+export const SHOW_MATCHES = 0
+export const SHOW_KDR = 1
+export const SHOW_KPR = 2
+export const SHOW_HSP = 3
+export const SHOW_BEST_MAP = 4
+export const SHOW_WR = 5
 // add any default user settings
 export const default_settings:items = {
     'numMatches':5,
+    'display': [true, true, true, true, true, true]
 }
